@@ -363,7 +363,12 @@ class Tracer(ExplorationTechnique):
         # first check: are we just executing user-controlled code?
         if not state.ip.symbolic and state.mem[state.ip].char.resolved.symbolic:
             l.debug("executing input-related code")
-            return state
+            return state, state
+
+        # second check: is this code mapped and executable?
+        section = state.project.loader.find_section_containing(state.addr)
+        if not section or not (section.flags & 0x4):
+            return state, state
 
         state = state.copy()
         state.options.add(sim_options.COPY_STATES)
