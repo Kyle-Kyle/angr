@@ -271,6 +271,8 @@ class Tracer(ExplorationTechnique):
             if ((trace_addr - state_addr) & 0xfff) == 0:
                 self._aslr_slides[current_bin] = self._current_slide = trace_addr - state_addr
                 return True
+            elif current_bin is None:
+                raise AngrTracerError("Trace desynced on jumping into an unmapped address %#x." % state_addr)
             else:
                 raise AngrTracerError("Trace desynced on jumping into %s. Did you load the right version of this library?" % current_bin.provides)
 
