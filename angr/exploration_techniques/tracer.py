@@ -262,6 +262,10 @@ class Tracer(ExplorationTechnique):
             return True
 
         current_bin = self.project.loader.find_object_containing(state_addr)
+
+        if current_bin is None:
+            raise AngrTracerError("Trace desynced on jumping into an unmapped address %#x." % state_addr)
+
         if current_bin is self.project.loader._extern_object or current_bin is self.project.loader._kernel_object:
             return False
         elif current_bin in self._aslr_slides:
