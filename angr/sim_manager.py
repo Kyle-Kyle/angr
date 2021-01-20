@@ -348,6 +348,9 @@ class SimulationManager:
             # if a step produced only unsat states, always add them to the unsat stash since this usually indicates a bug
             # if a step produced sat states and save_unsat is False, drop the unsats
             # if a step produced no successors, period, add the original state to deadended
+            if self._hierarchy and None in successors:
+                for s in successors[None]:
+                    self._hierarchy.add_state(s)
 
             # first check if anything happened besides unsat. that gates all this behavior
             if not any(v for k, v in successors.items() if k != 'unsat') and len(self._errored) == pre_errored:
