@@ -235,10 +235,24 @@ class SimulationManager:
         num_find += len(self._stashes[find_stash]) if find_stash in self._stashes else 0
         tech = self.use_technique(Explorer(find, avoid, find_stash, avoid_stash, cfg, num_find))
 
+        # populate extra_stop_points to veritesting
+        veri_tech = None
+        for tmp_tech in self._techniques:
+            if type(tmp_tech) is Veritesting:
+                veri_tech = tmp_tech
+                def deviation_filter(state):
+                    if tech._extra_stop_points and state.addr in tech._extra_stop_points:
+                        return True
+                    if tech.find and tech.find(state):
+                        return True
+                    return False
+                tmp_tech.options["deviation_filter"] = deviation_filter
+
         try:
             self.run(stash=stash, n=n, **kwargs)
         finally:
             self.remove_technique(tech)
+            if veri_tech: del veri_tech.options["deviation_filter"]
 
         return self
 
@@ -344,6 +358,14 @@ class SimulationManager:
             pre_errored = len(self._errored)
 
             successors = self.step_state(state, successor_func=successor_func, **run_args)
+
+            # add all active successors to state_hierarchy
+            # TODO: storing states here is weakref and will be deleted during GC,
+            # need to use alternate method
+            if self._hierarchy and None in successors:
+                for s in successors[None]:
+                    self._hierarchy.add_state(s)
+
             # handle degenerate stepping cases here. desired behavior:
             # if a step produced only unsat states, always add them to the unsat stash since this usually indicates a bug
             # if a step produced sat states and save_unsat is False, drop the unsats

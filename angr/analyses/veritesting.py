@@ -172,7 +172,7 @@ class Veritesting(Analysis):
     def __init__(
         self, input_state, boundaries=None, loop_unrolling_limit=10, enable_function_inlining=False,
         terminator=None, deviation_filter=None
-    ):
+        ):
         """
         SSE stands for Static Symbolic Execution, and we also implemented an extended version of Veritesting (Avgerinos,
         Thanassis, et al, ICSE 2014).
@@ -310,7 +310,7 @@ class Veritesting(Analysis):
             manager.step(successor_func=self._get_successors)
 
             if self._terminator is not None and self._terminator(manager):
-                for p in manager.unfuck:
+                for p in manager.stashes[stash]:
                     self._unfuck(p)
                 break
 
@@ -551,7 +551,7 @@ class Veritesting(Analysis):
                     cfg_initial_state.regs.rax = state.regs.rax
 
             cfg = self.project.analyses.CFGEmulated(
-                starts=((ip_int, state.history.jumpkind),),
+                starts=((ip_int, state.block().vex.jumpkind),),
                 context_sensitivity_level=0,
                 call_depth=1,
                 call_tracing_filter=filter,
