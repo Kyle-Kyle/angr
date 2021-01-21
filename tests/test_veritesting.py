@@ -29,10 +29,17 @@ def run_veritesting_a(arch):
     ex = proj.factory.simulation_manager(veritesting=True)
     ex.explore(find=addresses_veritesting_a[arch])
     nose.tools.assert_not_equal(len(ex.found), 0)
+
     # Make sure the input makes sense
     for f in ex.found:
         input_str = f.plugins['posix'].dumps(0)
         nose.tools.assert_equal(input_str.count(b'B'), 10)
+
+    # make sure the solution is actually found by veritesting
+    nose.tools.assert_true(len(ex.found) == 1)
+    state = ex.found[0]
+    for var in state.solver._solver.variables:
+        nose.tools.assert_true("state_merge" not in var)
 
 def run_veritesting_b(arch):
     #logging.getLogger('angr.analyses.sse').setLevel(logging.DEBUG)
@@ -45,10 +52,17 @@ def run_veritesting_b(arch):
     ex.use_technique(angr.exploration_techniques.Veritesting(enable_function_inlining=True))
     ex.explore(find=addresses_veritesting_b[arch])
     nose.tools.assert_not_equal(len(ex.found), 0)
+
     # Make sure the input makes sense
     for f in ex.found:
         input_str = f.plugins['posix'].dumps(0)
         nose.tools.assert_equal(input_str.count(b'B'), 35)
+
+    # make sure the solution is actually found by veritesting
+    nose.tools.assert_true(len(ex.found) == 1)
+    state = ex.found[0]
+    for var in state.solver._solver.variables:
+        nose.tools.assert_true("state_merge" not in var)
 
 def test_veritesting_a():
     # This is the most basic test
