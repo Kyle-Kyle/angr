@@ -35,7 +35,7 @@ class SimulationManager:
     :type project:          angr.project.Project
     :param stashes:         A dictionary to use as the stash store.
     :param active_states:   Active states to seed the "active" stash with.
-    :param hierarchy:       A StateHierarchy object to use to track the relationships between states.
+    :param hierarchy:       Whether to track the relationships between states using StateHierarchy.
     :param resilience:      A set of errors to catch during stepping to put a state in the ``errore`` list.
                             You may also provide the values False, None (default), or True to catch, respectively,
                             no errors, all angr-specific errors, and a set of many common errors.
@@ -77,7 +77,7 @@ class SimulationManager:
         self._errored = []
 
         self._stashes = self._create_integral_stashes() if stashes is None else stashes # type: defaultdict[str, List['SimState']]
-        self._hierarchy = StateHierarchy() if hierarchy is None else hierarchy
+        self._hierarchy = StateHierarchy() if hierarchy else None
         self._save_unsat = save_unsat
         self._auto_drop = {SimulationManager.DROP, }
         self._techniques = []
@@ -159,11 +159,11 @@ class SimulationManager:
         """
         simgr = SimulationManager(self._project,
                                   stashes=self._copy_stashes(deep=deep),
-                                  hierarchy=self._hierarchy,
                                   resilience=self._resilience,
                                   auto_drop=self._auto_drop,
                                   completion_mode=self.completion_mode,
                                   errored=self._errored)
+        simgr._hierarchy = self._hierarchy
         return simgr
 
     #
@@ -714,7 +714,7 @@ class SimulationManager:
         else:
             optimal, common_history, others = states, None, []
 
-        if len(optimal) >= 2:
+        if common_history and len(optimal) >= 2:
             # We found optimal states (states that share a common ancestor) to merge.
             # Compute constraints for each state starting from the common ancestor,
             # and use them as merge conditions.
