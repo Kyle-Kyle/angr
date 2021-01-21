@@ -7,7 +7,7 @@ import claripy
 l = logging.getLogger(name=__name__)
 
 
-class StateHierarchy(object):
+class StateHierarchy:
     def __init__(self):
 
         # The New Order
@@ -18,7 +18,7 @@ class StateHierarchy(object):
         self._reverse_ref_cache = {} # map from ref to object id
 
     def __getstate__(self):
-        histories = [ h for h in networkx.algorithms.dfs_postorder_nodes(self._graph) ]
+        histories = networkx.algorithms.dfs_postorder_nodes(self._graph)
         return (histories,)
 
     def __setstate__(self, s):
@@ -124,10 +124,10 @@ class StateHierarchy(object):
         return nodes
 
     def history_successors(self, h):
-        return [ ref for ref in self._graph.successors(self.get_ref(h)) ]
+        return self._graph.successors(self.get_ref(h))
 
     def history_predecessors(self, h):
-        return [ ref for ref in self._graph.predecessors(self.get_ref(h)) ]
+        return self._graph.predecessors(self.get_ref(h))
 
     def history_contains(self, h):
         return self.get_ref(h) in self._graph
@@ -148,7 +148,7 @@ class StateHierarchy(object):
             l.debug("... looking between %d and %d in %d states", good, bad, len(lineage))
             cur = (bad+good)//2
 
-            if cur == good or cur == bad:
+            if cur in (good, bad):
                 if lineage[bad].reachable():
                     bad += 1
 

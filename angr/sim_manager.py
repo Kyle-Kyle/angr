@@ -70,7 +70,7 @@ class SimulationManager:
             completion_mode=any,
             techniques=None,
             **kwargs):
-        super(SimulationManager, self).__init__()
+        super().__init__()
 
         self._project = project
         self.completion_mode = completion_mode
